@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustainable Arts Game Module: Prototype</title>
+    <!-- Tailwind CSS for modern aesthetics -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .game-container {
+            background-color: #fff3dd; /* Warm, analog theme */
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 1000px;
+            width: 100%;
+            padding: 2.5rem;
+            border: 4px solid #d97706; /* Accent border */
+        }
+        .item-card {
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+            position: relative;
+        }
+        .item-card:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .drop-zone {
+            min-height: 200px;
+            border: 3px dashed #f59e0b;
+            background-color: #fffbeb;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .drop-zone.hover {
+            background-color: #fef3c7;
+            border-color: #d97706;
+        }
+        .drop-zone.correct {
+            border-color: #10b981;
+            background-color: #ecfdf5;
+        }
+        .drop-zone.incorrect {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+        .category-label {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="game-container">
+    
+    <div id="selection-screen">
+        <h1 class="text-5xl font-extrabold text-amber-700 text-center mb-6">
+            <i class="fas fa-palette mr-3"></i> Sustainable Arts Learning Module
+        </h1>
+        <p class="text-xl text-gray-700 text-center mb-10">
+            Welcome, Grade 12 Artists! Let's solidify your knowledge before you start prototyping.
+        </p>
+        <div class="flex justify-center space-x-6">
+            <button onclick="showGame(1)" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-xl shadow-xl transition btn">
+                <i class="fas fa-sort mr-2"></i> Start Game 1: Sorting
+            </button>
+            <button onclick="showGame(2)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl shadow-xl transition btn">
+                <i class="fas fa-lightbulb mr-2"></i> Start Game 2: Application
+            </button>
+        </div>
+    </div>
+
+    <!-- Game 1: Recyclable or Not? (Drag and Drop) -->
+    <div id="game1-view" class="hidden">
+        <h2 class="text-3xl font-bold text-amber-700 mb-6 text-center">Game 1: Recyclable or Not? (VO: 3:30)</h2>
+        <p class="text-lg text-gray-700 mb-8 text-center">Drag each item into the correct waste category. This confirms your basic sustainability knowledge!</p>
+        
+        <!-- Drop Zones -->
+        <div class="grid grid-cols-3 gap-6 mb-10">
+            <div id="Recyclable" class="drop-zone relative rounded-xl p-8 pt-12">
+                <div class="category-label bg-green-600">RECYCLABLE <i class="fas fa-recycle"></i></div>
+                <div class="flex flex-wrap gap-2 justify-center" data-category="Recyclable"></div>
+            </div>
+            <div id="Biodegradable" class="drop-zone relative rounded-xl p-8 pt-12">
+                <div class="category-label bg-yellow-600">BIODEGRADABLE <i class="fas fa-leaf"></i></div>
+                <div class="flex flex-wrap gap-2 justify-center" data-category="Biodegradable"></div>
+            </div>
+            <div id="Residual" class="drop-zone relative rounded-xl p-8 pt-12">
+                <div class="category-label bg-red-600">RESIDUAL <i class="fas fa-trash"></i></div>
+                <div class="flex flex-wrap gap-2 justify-center" data-category="Residual"></div>
+            </div>
+        </div>
+
+        <!-- Draggable Items -->
+        <div id="draggable-items" class="flex flex-wrap gap-4 justify-center bg-white p-4 rounded-xl shadow-inner border-dashed border-2 border-gray-300">
+            <!-- Items will be inserted here -->
+        </div>
+
+        <div class="mt-8 flex justify-center space-x-4">
+            <button onclick="checkGame1()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-full transition btn shadow-md">
+                Check Answers
+            </button>
+            <button onclick="resetGame(1)" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full transition btn">
+                Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Game 2: What Am I Made Of? (Matching Quiz) -->
+    <div id="game2-view" class="hidden">
+        <h2 class="text-3xl font-bold text-amber-700 mb-6 text-center">Game 2: What Am I Made Of? (VO: 10:00)</h2>
+        <p class="text-lg text-gray-700 mb-8 text-center">Match the final Philippine art piece with its primary recycled source material.</p>
+
+        <div id="match-quiz" class="space-y-6">
+            <!-- Questions inserted here -->
+        </div>
+        
+        <div class="mt-8 flex justify-center space-x-4">
+            <button onclick="checkGame2()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-full transition btn shadow-md">
+                Submit Quiz
+            </button>
+            <button onclick="resetGame(2)" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-full transition btn">
+                Reset
+            </button>
+        </div>
+    </div>
+    
+    <div id="feedback-message" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-sm">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-text" class="text-gray-700 mb-6"></p>
+            <button onclick="hideFeedback()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-6 rounded-full transition btn">
+                Continue
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- DATA ---
+    const game1Data = [
+        { id: 1, name: "Clean Glass Jar", category: "Recyclable", icon: "fas fa-jar", color: "text-blue-500" },
+        { id: 2, name: "Dried Banana Peel", category: "Biodegradable", icon: "fas fa-leaf", color: "text-yellow-600" },
+        { id: 3, name: "Instant Noodle Wrapper", category: "Residual", icon: "fas fa-box-open", color: "text-red-500" },
+        { id: 4, name: "Aluminum Soda Can", category: "Recyclable", icon: "fas fa-wine-bottle", color: "text-gray-500" },
+        { id: 5, name: "Worn Rubber Slipper", category: "Residual", icon: "fas fa-shoe-prints", color: "text-red-700" },
+        { id: 6, name: "Egg Shells & Grounds", category: "Biodegradable", icon: "fas fa-egg", color: "text-yellow-800" },
+        { id: 7, name: "Soiled Pizza Box", category: "Residual", icon: "fas fa-utensils", color: "text-red-900" },
+        { id: 8, name: "Old T-shirt (Fabric)", category: "Recyclable", icon: "fas fa-shirt", color: "text-purple-500" },
+    ];
+
+    const game2Data = [
+        { id: 1, prompt: "Woven Bayong Bag", answer: "Plastic Packaging Strips", options: ["Tire Rubber", "Coconut Husks", "Plastic Packaging Strips", "Rolled Newspaper"], icon: "fas fa-shopping-basket" },
+        { id: 2, prompt: "Colorful Wall Relief", answer: "Plastic Bottle Caps", options: ["Metal Wires", "Bamboo Sticks", "Glass Shards", "Plastic Bottle Caps"], icon: "fas fa-palette" },
+        { id: 3, prompt: "Wind Chime Craft", answer: "Old Spoons/Forks", options: ["Wood Blocks", "Old Spoons/Forks", "PVC Pipes", "Seashells"], icon: "fas fa-wind" },
+    ];
+
+    let currentDraggedItem = null;
+
+    // --- UTILITY FUNCTIONS ---
+    function showFeedback(title, text, isSuccess = true) {
+        const feedbackDiv = document.getElementById('feedback-message');
+        document.getElementById('feedback-title').textContent = title;
+        document.getElementById('feedback-text').textContent = text;
+        feedbackDiv.style.display = 'flex';
+        document.getElementById('feedback-title').classList.remove('text-green-600', 'text-red-600');
+        document.getElementById('feedback-title').classList.add(isSuccess ? 'text-green-600' : 'text-red-600');
+    }
+
+    function hideFeedback() {
+        document.getElementById('feedback-message').style.display = 'none';
+    }
+
+    function showGame(gameId) {
+        document.getElementById('selection-screen').classList.add('hidden');
+        document.getElementById('game1-view').classList.add('hidden');
+        document.getElementById('game2-view').classList.add('hidden');
+
+        if (gameId === 1) {
+            document.getElementById('game1-view').classList.remove('hidden');
+            renderGame1();
+        } else if (gameId === 2) {
+            document.getElementById('game2-view').classList.remove('hidden');
+            renderGame2();
+        }
+    }
+
+    function resetGame(gameId) {
+        if (gameId === 1) {
+            document.getElementById('game1-view').classList.add('hidden');
+        } else if (gameId === 2) {
+            document.getElementById('game2-view').classList.add('hidden');
+        }
+        document.getElementById('selection-screen').classList.remove('hidden');
+        // Clear highlights on drop zones
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.classList.remove('correct', 'incorrect');
+        });
+    }
+
+    // --- GAME 1 LOGIC (Drag and Drop) ---
+
+    function renderGame1() {
+        const itemContainer = document.getElementById('draggable-items');
+        itemContainer.innerHTML = ''; // Clear previous items
+
+        game1Data.sort(() => Math.random() - 0.5).forEach(item => {
+            const card = document.createElement('div');
+            card.id = `item-${item.id}`;
+            card.className = `item-card bg-white p-3 rounded-lg shadow-md text-center border border-gray-200`;
+            card.draggable = true;
+            card.setAttribute('data-category', item.category);
+            card.innerHTML = `<i class="${item.icon} ${item.color} text-2xl"></i> <p class="text-sm font-medium">${item.name}</p>`;
+            itemContainer.appendChild(card);
+
+            // Add drag listeners
+            card.addEventListener('dragstart', dragStart);
+            card.addEventListener('dragend', dragEnd);
+        });
+
+        // Add drop listeners to zones
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.addEventListener('dragover', dragOver);
+            zone.addEventListener('dragleave', dragLeave);
+            zone.addEventListener('drop', drop);
+        });
+    }
+
+    function dragStart(e) {
+        currentDraggedItem = e.target;
+        e.dataTransfer.setData('text/plain', e.target.id);
+        setTimeout(() => e.target.style.opacity = '0.5', 0);
+    }
+
+    function dragEnd(e) {
+        e.target.style.opacity = '1';
+    }
+
+    function dragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('hover');
+    }
+
+    function dragLeave(e) {
+        e.currentTarget.classList.remove('hover');
+    }
+
+    function drop(e) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('hover');
+
+        const itemId = e.dataTransfer.getData('text/plain');
+        const draggedElement = document.getElementById(itemId);
+        const dropZone = e.currentTarget;
+        const correctCategory = draggedElement.getAttribute('data-category');
+        const dropCategory = dropZone.getAttribute('id');
+        
+        if (dropCategory === correctCategory) {
+            // Correct drop
+            dropZone.querySelector('.flex').appendChild(draggedElement);
+            draggedElement.draggable = false; // Item is locked in place
+            draggedElement.classList.add('shadow-green-500/50');
+            draggedElement.classList.remove('cursor-grab');
+            showFeedback('Correct!', `${draggedElement.getAttribute('data-category')} is the right place for ${draggedElement.querySelector('p').textContent}.`, true);
+        } else {
+            // Incorrect drop - item snaps back to the original container
+            document.getElementById('draggable-items').appendChild(draggedElement);
+            showFeedback('Try Again!', `${draggedElement.querySelector('p').textContent} doesn't belong in the ${dropZone.querySelector('.category-label').textContent.split(' ')[0]} bin.`, false);
+        }
+    }
+
+    function checkGame1() {
+        const misplacedItems = document.getElementById('draggable-items').children.length;
+        const totalItems = game1Data.length;
+
+        if (misplacedItems === 0) {
+            let score = 0;
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('incorrect');
+                zone.classList.add('correct');
+                score += zone.querySelector('.flex').children.length;
+            });
+            showFeedback('Success!', `All ${totalItems} items sorted correctly! You are ready to create your prototype.`, true);
+        } else {
+            showFeedback('Incomplete!', `You still have ${misplacedItems} items to sort. Review your categories and try again!`, false);
+        }
+    }
+
+    // --- GAME 2 LOGIC (Matching Quiz) ---
+
+    function renderGame2() {
+        const quizArea = document.getElementById('match-quiz');
+        quizArea.innerHTML = '';
+        
+        game2Data.forEach((q, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500';
+            questionDiv.innerHTML = `
+                <div class="flex items-center mb-4">
+                    <i class="${q.icon} text-blue-600 text-3xl mr-4"></i>
+                    <h3 class="text-xl font-bold text-gray-800">${q.prompt} was created from which source material?</h3>
+                </div>
+                <div class="options grid grid-cols-2 gap-4" id="q-${index}-options">
+                    ${q.options.sort(() => Math.random() - 0.5).map(option => `
+                        <label class="block p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="radio" name="q${index}" value="${option}" class="mr-2">
+                            ${option}
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+            quizArea.appendChild(questionDiv);
+        });
+    }
+
+    function checkGame2() {
+        let correctCount = 0;
+        const totalQuestions = game2Data.length;
+
+        game2Data.forEach((q, index) => {
+            const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
+            const optionsDiv = document.getElementById(`q-${index}-options`);
+            optionsDiv.querySelectorAll('label').forEach(label => label.classList.remove('bg-green-100', 'bg-red-100'));
+
+            if (selectedOption) {
+                const isCorrect = selectedOption.value === q.answer;
+                const label = selectedOption.closest('label');
+                
+                if (isCorrect) {
+                    label.classList.add('bg-green-100', 'border-green-500');
+                    correctCount++;
+                } else {
+                    label.classList.add('bg-red-100', 'border-red-500');
+                    // Highlight the correct answer
+                    document.querySelector(`input[name="q${index}"][value="${q.answer}"]`).closest('label').classList.add('bg-green-100', 'border-green-500');
+                }
+            } else {
+                // No answer selected, show the correct one
+                document.querySelector(`input[name="q${index}"][value="${q.answer}"]`).closest('label').classList.add('bg-green-100', 'border-green-500');
+            }
+        });
+
+        if (correctCount === totalQuestions) {
+            showFeedback('Excellent!', `You correctly matched all ${totalQuestions} source materials. You have the artist's eye!`, true);
+        } else {
+            showFeedback('Review Needed', `You got ${correctCount} out of ${totalQuestions} correct. Please review the highlighted answers!`, false);
+        }
+    }
+
+    // Initialize to show selection screen
+    window.onload = () => {
+        document.getElementById('selection-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
